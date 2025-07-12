@@ -11,6 +11,13 @@ cd "$PROJECT_DIR"
 echo "Installing npm dependencies..."
 npm install
 
+# Build the TypeScript project
+npm run build
+
+# Link the CLI globally using npm
+echo "Linking batch-image globally with npm link..."
+npm link
+
 # Make the main batch script executable
 chmod +x "$PROJECT_DIR/bin/batch-image.sh"
 

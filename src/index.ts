@@ -71,12 +71,16 @@ function promptForInput(question: string): Promise<string> {
   });
 }
 
-function parseBlogDate(blogDateStr: string): { year: string; month: string; isValid: boolean } {
+function parseBlogDate(blogDateStr: string): {
+  year: string;
+  month: string;
+  isValid: boolean;
+} {
   // Handle YYYYMM format (6 digits)
   if (/^\d{6}$/.test(blogDateStr)) {
     const year = blogDateStr.substring(0, 4);
     const month = blogDateStr.substring(4, 6);
-    
+
     // Validate month (01-12)
     const monthNum = parseInt(month, 10);
     if (monthNum >= 1 && monthNum <= 12) {
@@ -86,41 +90,45 @@ function parseBlogDate(blogDateStr: string): { year: string; month: string; isVa
       return { year, month: "01", isValid: false };
     }
   }
-  
+
   // Handle YYYYMMDD format (8 digits)
   if (/^\d{8}$/.test(blogDateStr)) {
     const year = blogDateStr.substring(0, 4);
     const month = blogDateStr.substring(4, 6);
     const day = blogDateStr.substring(6, 8);
-    
+
     // Validate month
     const monthNum = parseInt(month, 10);
     const dayNum = parseInt(day, 10);
-    
+
     if (monthNum < 1 || monthNum > 12) {
       console.log(`⚠️  Invalid month ${month}, defaulting to month 01`);
       return { year, month: "01", isValid: false };
     }
-    
+
     // Check if day is valid for the given month/year
     const yearNum = parseInt(year, 10);
     const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
-    
+
     if (dayNum < 1 || dayNum > daysInMonth) {
-      console.log(`⚠️  Invalid day ${day} for ${year}-${month}, defaulting to first of month`);
+      console.log(
+        `⚠️  Invalid day ${day} for ${year}-${month}, defaulting to first of month`
+      );
       return { year, month, isValid: false };
     }
-    
+
     return { year, month, isValid: true };
   }
-  
+
   // Invalid format
-  console.log(`⚠️  Invalid blog date format: ${blogDateStr}. Expected YYYYMM or YYYYMMDD`);
+  console.log(
+    `⚠️  Invalid blog date format: ${blogDateStr}. Expected YYYYMM or YYYYMMDD`
+  );
   const today = new Date();
-  return { 
-    year: today.getFullYear().toString(), 
-    month: String(today.getMonth() + 1).padStart(2, "0"), 
-    isValid: false 
+  return {
+    year: today.getFullYear().toString(),
+    month: String(today.getMonth() + 1).padStart(2, "0"),
+    isValid: false,
   };
 }
 
@@ -288,7 +296,7 @@ async function main() {
   let blogYear: string;
   let blogMonth: string;
   let targetDir: string;
-  
+
   // Check if --blog-date is provided
   const blogDateStr = argv["blog-date"] as string | undefined;
   if (blogDateStr) {
@@ -296,7 +304,7 @@ async function main() {
     const parsedDate = parseBlogDate(blogDateStr);
     blogYear = parsedDate.year;
     blogMonth = parsedDate.month;
-    
+
     if (!blogDir) {
       // Default to ~/Pictures/blog if not specified
       const homeDir = process.env.HOME || process.env.USERPROFILE;
@@ -306,11 +314,11 @@ async function main() {
       }
       blogDir = path.join(homeDir, "Pictures", "blog");
     }
-    
+
     // Create the blog directory structure based on blog-date
     const blogYearDir = path.join(blogDir, blogYear);
     targetDir = path.join(blogYearDir, blogMonth);
-    
+
     try {
       fs.mkdirSync(targetDir, { recursive: true });
       console.log(`📅 Created blog date directory: ${targetDir}`);
@@ -392,13 +400,15 @@ async function main() {
     }
   } else {
     // Use provided date or today's date
-    dateStr = argv.date as string | undefined || (() => {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      return `${year}${month}${day}`;
-    })();
+    dateStr =
+      (argv.date as string | undefined) ||
+      (() => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        return `${year}${month}${day}`;
+      })();
   }
 
   // Get initial user confirmation
