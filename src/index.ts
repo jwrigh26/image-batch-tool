@@ -33,6 +33,14 @@ async function main() {
       type: "string",
       describe: "Path to raw image directory",
     })
+    .option("date", {
+      type: "string",
+      describe: "Date for output organization (YYYYMMDD)",
+    })
+    .option("category", {
+      type: "string",
+      describe: "Category for image batch",
+    })
     .parse();
 
   let rawDir = argv.raw as string | undefined;

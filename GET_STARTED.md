@@ -59,11 +59,24 @@ This project provides a highly configurable, date-organized image batch processo
 
 ## 🚀 Usage
 
-1. Drop your raw images into the `raw/` folder (e.g. `raw/*.jpg`, `raw/*.png`).
-2. Run the bash wrapper, passing any flags or paths as needed:
+1. Drop your raw images into your default folder: `~/Pictures/_raw` (created automatically if missing), or specify a custom folder with the `--raw` flag.
+2. Run the CLI tool directly or via the bash wrapper, passing any flags as needed:
+
    ```bash
-   ./bin/batch-image.sh --date 20250712 --category sketch raw/*
+   # Use default raw folder
+   npm start -- --date 20250712 --category sketch
+
+   # Or specify a custom raw folder
+   npm start -- --raw /path/to/images --date 20250712 --category sketch
    ```
+
+   Or, if using the bash wrapper:
+
+   ```bash
+   ./bin/batch-image.sh --date 20250712 --category sketch
+   ./bin/batch-image.sh --raw /path/to/images --date 20250712 --category sketch
+   ```
+
 3. Check the output under `blog/2025/07/`. You should see your `.webp` variants and optionally an `index.html` gallery.
 
 ---
@@ -115,9 +128,6 @@ This project provides a highly configurable, date-organized image batch processo
 
 ## 📋 Checklist
 
--
-
----
+- ***
 
 Let me know if you’d like to flesh out any of the code snippets or add a sample `index.html` template!
-
