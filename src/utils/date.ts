@@ -1,8 +1,10 @@
 // Utilities for parsing and validating blog dates
 
-export function parseBlogDate(
-  blogDateStr: string
-): { year: string; month: string; isValid: boolean } {
+export function parseBlogDate(blogDateStr: string): {
+  year: string;
+  month: string;
+  isValid: boolean;
+} {
   // Handle YYYYMM format (6 digits)
   if (/^\d{6}$/.test(blogDateStr)) {
     const year = blogDateStr.substring(0, 4);

@@ -1,20 +1,22 @@
-import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { ensureDir, isDirectory } from "./utils/fsHelpers";
 
 export interface Config {
   rawDir: string;
-  blogDir: string;       // Parent blog directory, e.g., ~/Pictures/blog
+  blogDir: string; // Parent blog directory, e.g., ~/Pictures/blog
   blogTargetDir: string; // Created year/month subdirectory, e.g., ~/Pictures/blog/2025/06
-  date: string;          // YYYYMMDD formatted date
+  date: string; // YYYYMMDD formatted date
 }
 
 /**
  * Prompt the user with a question and return the input string.
  */
 export function promptForInput(question: string): Promise<string> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   return new Promise((resolve) => {
     rl.question(question, (answer) => {
       rl.close();
@@ -31,7 +33,10 @@ export function promptForSimpleConfirmation(
   blogTargetDir: string,
   date: string
 ): Promise<boolean> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   return new Promise((resolve) => {
     console.log("\n📋 Configuration Summary:");
     console.log(`📁 Raw directory:  ${rawDir}`);
@@ -52,20 +57,26 @@ export function promptForSimpleConfirmation(
  * Interactive configuration editor.
  * Allows changing rawDir, blogDir, and date, then creates target directory.
  */
-export async function promptForConfiguration(
-  config: Config
-): Promise<Config> {
+export async function promptForConfiguration(config: Config): Promise<Config> {
   console.log("\n📋 Configuration Review:");
-  console.log("Let's go through each setting. Press Enter to keep current value, or type a new value.\n");
+  console.log(
+    "Let's go through each setting. Press Enter to keep current value, or type a new value.\n"
+  );
 
   // Raw directory
   console.log(`📁 Raw directory: ${config.rawDir}`);
-  const rawInput = await promptForInput("Enter new raw directory (or press Enter to keep): ");
+  const rawInput = await promptForInput(
+    "Enter new raw directory (or press Enter to keep): "
+  );
   if (rawInput) {
     config.rawDir = rawInput;
     if (!isDirectory(config.rawDir)) {
-      console.log(`⚠️  Warning: Directory ${config.rawDir} does not exist or is not a directory.`);
-      const createIt = await promptForInput("Would you like to create it? (y/n): ");
+      console.log(
+        `⚠️  Warning: Directory ${config.rawDir} does not exist or is not a directory.`
+      );
+      const createIt = await promptForInput(
+        "Would you like to create it? (y/n): "
+      );
       if (createIt.toLowerCase().startsWith("y")) {
         ensureDir(config.rawDir);
         console.log(`✅ Created directory: ${config.rawDir}`);
@@ -75,12 +86,18 @@ export async function promptForConfiguration(
 
   // Blog parent directory
   console.log(`\n📝 Blog parent directory: ${config.blogDir}`);
-  const blogInput = await promptForInput("Enter new blog parent directory (or press Enter to keep): ");
+  const blogInput = await promptForInput(
+    "Enter new blog parent directory (or press Enter to keep): "
+  );
   if (blogInput) {
     config.blogDir = blogInput;
     if (!isDirectory(config.blogDir)) {
-      console.log(`⚠️  Warning: Directory ${config.blogDir} does not exist or is not a directory.`);
-      const createIt = await promptForInput("Would you like to create it? (y/n): ");
+      console.log(
+        `⚠️  Warning: Directory ${config.blogDir} does not exist or is not a directory.`
+      );
+      const createIt = await promptForInput(
+        "Would you like to create it? (y/n): "
+      );
       if (createIt.toLowerCase().startsWith("y")) {
         ensureDir(config.blogDir);
         console.log(`✅ Created directory: ${config.blogDir}`);
@@ -90,7 +107,9 @@ export async function promptForConfiguration(
 
   // Date
   console.log(`\n📅 Date: ${config.date}`);
-  const dateInput = await promptForInput("Enter new date (YYYYMMDD format, or press Enter to keep): ");
+  const dateInput = await promptForInput(
+    "Enter new date (YYYYMMDD format, or press Enter to keep): "
+  );
   if (dateInput) {
     if (!/^\d{8}$/.test(dateInput)) {
       console.log(`❌ Invalid date format. Please use YYYYMMDD format.`);
@@ -114,7 +133,9 @@ export async function promptForConfiguration(
   console.log(`📅 Date:              ${config.date}`);
   console.log();
 
-  const finalConfirm = await promptForInput("Is this configuration correct? (y/n/edit): ");
+  const finalConfirm = await promptForInput(
+    "Is this configuration correct? (y/n/edit): "
+  );
   if (finalConfirm.toLowerCase().startsWith("n")) {
     console.log("Operation cancelled by user.");
     process.exit(0);

@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-import path from "path";
 import os from "os";
+import path from "path";
 import { getOptions } from "./cli";
+import {
+  Config,
+  promptForConfiguration,
+  promptForSimpleConfirmation,
+} from "./config";
+import { processImages } from "./processor";
 import { parseBlogDate } from "./utils/date";
 import { ensureDir, isDirectory } from "./utils/fsHelpers";
-import { promptForSimpleConfirmation, promptForConfiguration, Config } from "./config";
-import { processImages } from "./processor";
 
 // Orchestrator for the Image Batch Tool
 // 1) CLI parsing, 2) default directories,
@@ -45,7 +49,9 @@ async function main() {
     year = parsed.year;
     month = parsed.month;
   } else {
-    const dateStr = opts.date || `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}01`;
+    const dateStr =
+      opts.date ||
+      `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}01`;
     year = dateStr.substring(0, 4);
     month = dateStr.substring(4, 6);
   }
@@ -53,13 +59,28 @@ async function main() {
   ensureDir(targetDir);
 
   // 4) Confirm or reconfigure
-  const initial: Config = { rawDir, blogDir, blogTargetDir: targetDir, date: `${year}${month}01` };
-  const confirmed = await promptForSimpleConfirmation(rawDir, targetDir, initial.date);
+  const initial: Config = {
+    rawDir,
+    blogDir,
+    blogTargetDir: targetDir,
+    date: `${year}${month}01`,
+  };
+  const confirmed = await promptForSimpleConfirmation(
+    rawDir,
+    targetDir,
+    initial.date
+  );
   const config = confirmed ? initial : await promptForConfiguration(initial);
 
   // 5) Process images
-  await processImages(config.rawDir, config.blogTargetDir);
-  
+  await processImages(
+    config.rawDir, 
+    config.blogTargetDir, 
+    1200, // maxWidth
+    opts.category || "image", // category
+    config.date // date for filename
+  );
+
   console.log("🎉 Done!");
 }
 
