@@ -116,6 +116,103 @@ The tool supports interactive configuration editing. If the initial setup doesn'
 - 📅 Update the date
 - 📂 Preview the final target directory
 
+## 🌐 Responsive Image Output
+
+The tool generates responsive variants in both WebP and JPEG formats for maximum compatibility:
+
+### Output Files Generated
+
+Each input image creates **8 optimized files**:
+
+```
+20250715-category-image-name-orig.webp    (Original size, WebP)
+20250715-category-image-name-orig.jpg     (Original size, JPEG)
+20250715-category-image-name-large.webp   (75% size, WebP)  
+20250715-category-image-name-large.jpg    (75% size, JPEG)
+20250715-category-image-name-medium.webp  (50% size, WebP)
+20250715-category-image-name-medium.jpg   (50% size, JPEG)
+20250715-category-image-name-small.webp   (25% size, WebP)
+20250715-category-image-name-small.jpg    (25% size, JPEG)
+```
+
+### File Size Comparison
+
+WebP provides significant space savings over JPEG:
+
+| Variant | WebP Size | JPEG Size | Savings |
+|---------|-----------|-----------|---------|
+| Original | 26K | 56K | **54% smaller** |
+| Large | 18K | 37K | **51% smaller** |
+| Medium | 11K | 21K | **48% smaller** |
+| Small | 5K | 8K | **38% smaller** |
+
+### HTML Usage Examples
+
+**Modern Responsive Images with Format Selection:**
+
+```html
+<picture>
+  <!-- Large screens: WebP preferred, JPEG fallback -->
+  <source srcset="20250715-blog-image-large.webp" 
+          media="(min-width: 1024px)" type="image/webp">
+  <source srcset="20250715-blog-image-large.jpg" 
+          media="(min-width: 1024px)" type="image/jpeg">
+  
+  <!-- Medium screens: WebP preferred, JPEG fallback -->
+  <source srcset="20250715-blog-image-medium.webp" 
+          media="(min-width: 768px)" type="image/webp">
+  <source srcset="20250715-blog-image-medium.jpg" 
+          media="(min-width: 768px)" type="image/jpeg">
+  
+  <!-- Mobile: WebP preferred, JPEG fallback -->
+  <source srcset="20250715-blog-image-small.webp" type="image/webp">
+  <img src="20250715-blog-image-small.jpg" 
+       alt="Description" loading="lazy">
+</picture>
+```
+
+**Simple Responsive Images (JPEG only for older browsers):**
+
+```html
+<img src="20250715-blog-image-medium.jpg"
+     srcset="20250715-blog-image-small.jpg 400w,
+             20250715-blog-image-medium.jpg 800w,
+             20250715-blog-image-large.jpg 1200w"
+     sizes="(max-width: 768px) 400px,
+            (max-width: 1024px) 800px,
+            1200px"
+     alt="Description" loading="lazy">
+```
+
+**CSS Background Images:**
+
+```css
+.hero-image {
+  background-image: url('20250715-blog-image-large.webp');
+}
+
+/* Fallback for browsers without WebP support */
+.no-webp .hero-image {
+  background-image: url('20250715-blog-image-large.jpg');
+}
+
+/* Responsive backgrounds */
+@media (max-width: 768px) {
+  .hero-image {
+    background-image: url('20250715-blog-image-medium.webp');
+  }
+  .no-webp .hero-image {
+    background-image: url('20250715-blog-image-medium.jpg');
+  }
+}
+```
+
+### Browser Support
+
+- **WebP**: Chrome, Firefox, Safari (iOS 14+), Edge
+- **JPEG**: Universal support (all browsers)
+- **Recommended**: Use `<picture>` element for automatic format selection
+
 ## Development
 
 ### Prerequisites
