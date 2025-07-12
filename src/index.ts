@@ -54,7 +54,8 @@ function promptForSimpleConfirmation(
 
 interface Config {
   rawDir: string;
-  blogDir: string;
+  blogDir: string; // This will be the parent blog directory (e.g., ~/Pictures/blog)
+  blogTargetDir: string; // This will be the full path with year/month (e.g., ~/Pictures/blog/2025/06)
   date: string;
 }
 
@@ -168,10 +169,10 @@ async function promptForConfiguration(config: Config): Promise<Config> {
     }
   }
 
-  // Blog directory
-  console.log(`\n📝 Blog directory: ${config.blogDir}`);
+  // Blog parent directory (not the full year/month path)
+  console.log(`\n📝 Blog parent directory: ${config.blogDir}`);
   const blogInput = await promptForInput(
-    "Enter new blog directory (or press Enter to keep): "
+    "Enter new blog parent directory (or press Enter to keep): "
   );
   if (blogInput) {
     config.blogDir = blogInput;
@@ -211,11 +212,30 @@ async function promptForConfiguration(config: Config): Promise<Config> {
     config.date = dateInput;
   }
 
-  // Final confirmation
+  // Construct the target directory based on the parent blog dir and date
+  const year = config.date.substring(0, 4);
+  const month = config.date.substring(4, 6);
+  config.blogTargetDir = path.join(config.blogDir, year, month);
+
+  // Ensure the target directory exists
+  try {
+    fs.mkdirSync(config.blogTargetDir, { recursive: true });
+    console.log(
+      `✅ Target directory created/verified: ${config.blogTargetDir}`
+    );
+  } catch (err) {
+    console.log(
+      `❌ Failed to create target directory: ${config.blogTargetDir}`
+    );
+    return await promptForConfiguration(config); // Start over
+  }
+
+  // Final confirmation - show the actual target directory
   console.log("\n📋 Final Configuration Summary:");
-  console.log(`📁 Raw directory:  ${config.rawDir}`);
-  console.log(`📝 Blog directory: ${config.blogDir}`);
-  console.log(`📅 Date:           ${config.date}`);
+  console.log(`📁 Raw directory:     ${config.rawDir}`);
+  console.log(`📝 Blog parent dir:   ${config.blogDir}`);
+  console.log(`📂 Target directory:  ${config.blogTargetDir}`);
+  console.log(`📅 Date:              ${config.date}`);
   console.log();
 
   const finalConfirm = await promptForInput(
@@ -423,7 +443,8 @@ async function main() {
     // User said no, so run the interactive configuration editor
     finalConfig = await promptForConfiguration({
       rawDir,
-      blogDir: targetDir,
+      blogDir: blogDir, // Parent blog directory, not target
+      blogTargetDir: targetDir, // Current target directory
       date: dateStr,
     });
 
@@ -431,33 +452,14 @@ async function main() {
     rawDir = finalConfig.rawDir;
     dateStr = finalConfig.date;
 
-    // Recalculate month directory based on potentially new date/blog dir
-    const finalYear = dateStr.substring(0, 4);
-    const finalMonth = dateStr.substring(4, 6);
-    const finalMonthDir = path.join(
-      path.dirname(finalConfig.blogDir),
-      finalYear,
-      finalMonth
-    );
-
-    // Ensure the final output directory exists
-    try {
-      fs.mkdirSync(finalMonthDir, { recursive: true });
-      console.log(`✅ Ensured final output directory exists: ${finalMonthDir}`);
-    } catch (err) {
-      console.error(
-        `Failed to create final output directory: ${finalMonthDir}`
-      );
-      process.exit(1);
-    }
-
-    // Update finalConfig with the correct final month directory
-    finalConfig.blogDir = finalMonthDir;
+    // The target directory is already calculated in promptForConfiguration
+    targetDir = finalConfig.blogTargetDir;
   } else {
     // User confirmed initial config, use it as-is
     finalConfig = {
       rawDir,
-      blogDir: targetDir,
+      blogDir: blogDir, // Parent blog directory
+      blogTargetDir: targetDir, // Target directory with year/month
       date: dateStr,
     };
   }
@@ -472,7 +474,7 @@ async function main() {
     console.log(`No image files found in ${finalConfig.rawDir}.`);
   } else {
     console.log(
-      `\n✅ Processing ${imageFiles.length} image(s) from ${finalConfig.rawDir} to ${finalConfig.blogDir}`
+      `\n✅ Processing ${imageFiles.length} image(s) from ${finalConfig.rawDir} to ${finalConfig.blogTargetDir}`
     );
     console.log("🎉 Success! Image batch processing would happen here.");
     // TODO: Actual image processing will go here
