@@ -78,7 +78,8 @@ async function main() {
     config.blogTargetDir, 
     1200, // maxWidth
     opts.category || "image", // category
-    config.date // date for filename
+    config.date, // date for filename
+    opts.preset || "modern" // preset configuration
   );
 
   console.log("🎉 Done!");

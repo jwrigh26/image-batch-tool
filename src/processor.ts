@@ -20,6 +20,37 @@ const SCALE_FACTORS = {
   small: 0.25   // 25% of original
 };
 
+// Preset configurations for different use cases
+const PRESET_CONFIGS = {
+  // Modern web (WebP only, no original)
+  modern: {
+    formats: ['webp'] as const,
+    variants: ['large', 'medium', 'small'] as const,
+    description: '3 files per image - WebP only, practical sizes'
+  },
+  
+  // Blog optimized (WebP + JPEG fallback, no original) 
+  blog: {
+    formats: ['webp', 'jpeg'] as const,
+    variants: ['large', 'medium'] as const,
+    description: '4 files per image - 2 sizes, 2 formats'
+  },
+  
+  // Maximum compatibility (current behavior)
+  full: {
+    formats: ['webp', 'jpeg'] as const,
+    variants: ['orig', 'large', 'medium', 'small'] as const,
+    description: '8 files per image - All sizes, all formats'
+  },
+  
+  // Minimal (just one optimized size)
+  minimal: {
+    formats: ['webp'] as const,
+    variants: ['medium'] as const,
+    description: '1 file per image - Single WebP medium size'
+  }
+};
+
 // Output format configuration
 const OUTPUT_FORMATS = {
   webp: { 
@@ -36,7 +67,7 @@ const OUTPUT_FORMATS = {
 
 /**
  * Process images from rawDir to targetDir.
- * Creates responsive variants (orig, large, medium, small) in both WebP and JPEG formats.
+ * Creates responsive variants using configurable presets.
  * Saves processed files in targetDir with YYYYMMDD-category-slug-variant.ext naming.
  */
 export async function processImages(
@@ -45,7 +76,7 @@ export async function processImages(
   maxWidth = 1200,
   category = "image",
   date?: string,
-  outputFormats: ('webp' | 'jpeg')[] = ['webp', 'jpeg']
+  preset: keyof typeof PRESET_CONFIGS = 'modern'
 ): Promise<void> {
   const files = fs.readdirSync(rawDir);
   const imageFiles = files.filter((file) => {
@@ -60,7 +91,9 @@ export async function processImages(
     return;
   }
 
-  console.log(`\n🔄 Processing ${imageFiles.length} image(s) with responsive variants in ${outputFormats.join(' & ')} formats...`);
+  const config = PRESET_CONFIGS[preset];
+  console.log(`\n🔄 Processing ${imageFiles.length} image(s) with "${preset}" preset: ${config.description}`);
+  
   const promises = imageFiles.map(async (filename) => {
     const inputPath = path.join(rawDir, filename);
     const name = path.parse(filename).name;
@@ -74,15 +107,16 @@ export async function processImages(
       const { width, height } = await sharp(inputPath).metadata();
       const originalWidth = width || 0;
       
-      console.log(`📐 ${filename}: ${width}x${height}px → Creating variants in ${outputFormats.length} format(s)...`);
+      console.log(`📐 ${filename}: ${width}x${height}px → Creating ${config.variants.length} variant(s) in ${config.formats.length} format(s)...`);
       
       // Create all responsive variants in all requested formats
       const allVariantPromises: Promise<any>[] = [];
       
-      for (const format of outputFormats) {
+      for (const format of config.formats) {
         const formatConfig = OUTPUT_FORMATS[format];
         
-        const formatVariantPromises = Object.entries(SCALE_FACTORS).map(async ([variant, scale]) => {
+        const formatVariantPromises = config.variants.map(async (variant) => {
+          const scale = SCALE_FACTORS[variant];
           const targetWidth = Math.round(Math.min(originalWidth * scale, maxWidth));
           const outputFilename = `${baseFilename}-${variant}${formatConfig.ext}`;
           const outputPath = path.join(targetDir, outputFilename);
@@ -124,7 +158,7 @@ export async function processImages(
         .map(([fmt, variants]) => `${fmt.toUpperCase()}: ${variants.join(', ')}`)
         .join(' | ');
       
-      console.log(`✅ ${filename} → ${allVariants.length} total variants: ${formatSummaries}`);
+      console.log(`✅ ${filename} → ${allVariants.length} total files: ${formatSummaries}`);
       
     } catch (err) {
       console.error(`❌ Failed processing ${filename}:`, err);

@@ -92,6 +92,30 @@ When prompted, you can:
 | `--date`      | Full date (YYYYMMDD)            | `--date 20250715`        |
 | `--blog-date` | Blog date (YYYYMM or YYYYMMDD)  | `--blog-date 202507`     |
 | `--category`  | Image category                  | `--category vacation`    |
+| `--preset`    | Output configuration preset     | `--preset modern`        |
+
+### Output Presets
+
+Choose how many files to generate per image:
+
+| Preset | Files Per Image | Formats | Sizes | Best For |
+|--------|-----------------|---------|-------|----------|
+| **modern** _(default)_ | **3 files** | WebP only | large, medium, small | Modern websites (95%+ browser support) |
+| **minimal** | **1 file** | WebP only | medium | Simple blogs, fast loading |
+| **blog** | **4 files** | WebP + JPEG | large, medium | Blog with fallback support |
+| **full** | **8 files** | WebP + JPEG | orig, large, medium, small | Maximum compatibility |
+
+**Examples:**
+```bash
+# Default: 3 WebP files (recommended)
+batch-image --blog-date 202507 --category travel
+
+# Minimal: just 1 optimized file  
+batch-image --blog-date 202507 --category travel --preset minimal
+
+# Blog: 4 files with JPEG fallbacks
+batch-image --blog-date 202507 --category travel --preset blog
+```
 
 ## Directory Structure
 
@@ -118,37 +142,52 @@ The tool supports interactive configuration editing. If the initial setup doesn'
 
 ## 🌐 Responsive Image Output
 
-The tool generates responsive variants in both WebP and JPEG formats for maximum compatibility:
+The tool generates responsive variants with configurable presets to balance quality, compatibility, and file count:
 
-### Output Files Generated
+### Default Output (Modern Preset)
 
-Each input image creates **8 optimized files**:
+Each input image creates **3 optimized WebP files** _(recommended for modern websites)_:
 
 ```
-20250715-category-image-name-orig.webp    (Original size, WebP)
-20250715-category-image-name-orig.jpg     (Original size, JPEG)
-20250715-category-image-name-large.webp   (75% size, WebP)  
-20250715-category-image-name-large.jpg    (75% size, JPEG)
-20250715-category-image-name-medium.webp  (50% size, WebP)
-20250715-category-image-name-medium.jpg   (50% size, JPEG)
-20250715-category-image-name-small.webp   (25% size, WebP)
-20250715-category-image-name-small.jpg    (25% size, JPEG)
+20250715-category-image-name-large.webp   (75% size, ~900px)
+20250715-category-image-name-medium.webp  (50% size, ~600px)  
+20250715-category-image-name-small.webp   (25% size, ~300px)
 ```
 
-### File Size Comparison
+### File Size Benefits
 
 WebP provides significant space savings over JPEG:
 
-| Variant | WebP Size | JPEG Size | Savings |
-|---------|-----------|-----------|---------|
-| Original | 26K | 56K | **54% smaller** |
+| Variant | WebP Size | JPEG Size* | Savings |
+|---------|-----------|------------|---------|
 | Large | 18K | 37K | **51% smaller** |
 | Medium | 11K | 21K | **48% smaller** |
 | Small | 5K | 8K | **38% smaller** |
 
+_*JPEG sizes shown for comparison - only generated with `blog` or `full` presets_
+
+### WebP Browser Support (2024)
+
+- **✅ Supported**: Chrome, Firefox, Safari, Edge (95%+ of users)
+- **❌ Not Supported**: Internet Explorer, very old mobile browsers  
+- **Recommendation**: Use `modern` preset for new projects, `blog` preset if you need IE support
+
 ### HTML Usage Examples
 
-**Modern Responsive Images with Format Selection:**
+**Modern Responsive Images (Default Preset):**
+
+```html
+<img src="20250715-blog-image-medium.webp"
+     srcset="20250715-blog-image-small.webp 400w,
+             20250715-blog-image-medium.webp 800w,
+             20250715-blog-image-large.webp 1200w"
+     sizes="(max-width: 768px) 400px,
+            (max-width: 1024px) 800px,
+            1200px"
+     alt="Description" loading="lazy">
+```
+
+**With JPEG Fallback (Blog Preset):**
 
 ```html
 <picture>
@@ -158,30 +197,11 @@ WebP provides significant space savings over JPEG:
   <source srcset="20250715-blog-image-large.jpg" 
           media="(min-width: 1024px)" type="image/jpeg">
   
-  <!-- Medium screens: WebP preferred, JPEG fallback -->
-  <source srcset="20250715-blog-image-medium.webp" 
-          media="(min-width: 768px)" type="image/webp">
-  <source srcset="20250715-blog-image-medium.jpg" 
-          media="(min-width: 768px)" type="image/jpeg">
-  
   <!-- Mobile: WebP preferred, JPEG fallback -->
-  <source srcset="20250715-blog-image-small.webp" type="image/webp">
-  <img src="20250715-blog-image-small.jpg" 
+  <source srcset="20250715-blog-image-medium.webp" type="image/webp">
+  <img src="20250715-blog-image-medium.jpg" 
        alt="Description" loading="lazy">
 </picture>
-```
-
-**Simple Responsive Images (JPEG only for older browsers):**
-
-```html
-<img src="20250715-blog-image-medium.jpg"
-     srcset="20250715-blog-image-small.jpg 400w,
-             20250715-blog-image-medium.jpg 800w,
-             20250715-blog-image-large.jpg 1200w"
-     sizes="(max-width: 768px) 400px,
-            (max-width: 1024px) 800px,
-            1200px"
-     alt="Description" loading="lazy">
 ```
 
 **CSS Background Images:**
